@@ -1,0 +1,27 @@
+{
+    "p-value": "The probability of obtaining test results at least as extreme as the observed results, assuming the null hypothesis is true. A smaller p-value indicates stronger evidence against the null hypothesis.",
+    
+    "Null Hypothesis": "The default assumption that there is no significant difference or relationship between variables. Statistical tests aim to either reject or fail to reject this hypothesis.",
+    
+    "Effect Size": "A quantitative measure of the magnitude of a phenomenon. Common measures include Cohen's d, Pearson's r, and odds ratios.",
+    
+    "Statistical Power": "The probability that a test will correctly reject a false null hypothesis. Higher power means a lower chance of Type II errors.",
+    
+    "Type I Error": "False positive - rejecting the null hypothesis when it is actually true.",
+    
+    "Type II Error": "False negative - failing to reject the null hypothesis when it is actually false.",
+    
+    "Confidence Interval": "A range of values that likely contains the true population parameter. The confidence level (e.g., 95%) indicates the probability that the interval contains the parameter.",
+    
+    "Normal Distribution": "A continuous probability distribution characterized by a symmetric bell-shaped curve. Many statistical tests assume data follows this distribution.",
+    
+    "Non-parametric Tests": "Statistical tests that don't assume a specific distribution of the data. Examples include Mann-Whitney U test and Kruskal-Wallis test.",
+    
+    "Repeated Measures": "A study design where the same subjects are measured multiple times under different conditions.",
+    
+    "Independent Groups": "A study design where different subjects are assigned to different groups or conditions.",
+    
+    "Hierarchical Data": "Data with a nested structure, such as students within classes within schools.",
+    
+    "Time Series": "A sequence of data points collected over time, typically at regular intervals."
+} 

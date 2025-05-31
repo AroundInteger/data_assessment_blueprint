@@ -8,14 +8,18 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from scipy import stats
 import io
+from pathlib import Path
+from components.welcome import show_welcome_screen, initialize_session
 
 # Page configuration
 st.set_page_config(
-    page_title="Statistical Analysis Blueprint - Phase 3", 
-    page_icon="📊", 
-    layout="wide",
-    initial_sidebar_state="expanded"
+    page_title="Data Assessment Blueprint - Phase 3",
+    page_icon="📊",
+    layout="wide"
 )
+
+# Initialize session state
+initialize_session()
 
 # Custom CSS for better styling
 st.markdown("""
@@ -648,8 +652,13 @@ print(f"Anderson-Darling: statistic = {result.statistic:.4f}")
     }
 
 def main():
-    # Header
-    st.markdown('<h1 class="main-header">📊 Statistical Analysis Blueprint</h1>', unsafe_allow_html=True)
+    # Show welcome screen if no step is set
+    if st.session_state['current_step'] == 'welcome':
+        show_welcome_screen()
+        return
+
+    # Main content
+    st.title("Phase 3: Statistical Characterization")
     
     # Get the workflow structure
     workflow = get_statistical_analysis_workflow()
