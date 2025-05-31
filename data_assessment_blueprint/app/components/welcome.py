@@ -11,37 +11,56 @@ def load_glossary():
     return {}
 
 def show_welcome_screen():
-    """Display the welcome screen with app overview and navigation."""
-    st.title("Data Assessment Blueprint")
+    """Display the welcome screen with project overview and navigation options."""
+    st.markdown('<h1 class="main-header">Data Assessment Blueprint</h1>', unsafe_allow_html=True)
     
-    # App Overview
+    # Project Overview
     st.markdown("""
-    Welcome to the Data Assessment Blueprint! This tool helps you create robust statistical analysis plans
-    through an interactive, step-by-step process.
+    Welcome to the Data Assessment Blueprint! This tool helps you:
+    
+    - Understand your data structure
+    - Perform distributional analysis
+    - Select appropriate statistical tests
+    - Generate comprehensive analysis plans
     """)
     
-    # Quick Start Guide
-    with st.expander("Quick Start Guide", expanded=True):
+    # Navigation Options
+    st.markdown("### Get Started")
+    if st.button("Begin Data Analysis"):
+        st.session_state['current_step'] = 'data_input'
+        st.rerun()
+    
+    # Project Information
+    with st.expander("About This Project"):
         st.markdown("""
-        1. **Upload Your Data**: Start by uploading your dataset in CSV, Excel, or JSON format
-        2. **Data Preview**: Review your data structure and basic statistics
-        3. **Analysis Planning**: Follow the interactive guide to select appropriate statistical tests
-        4. **Generate Plan**: Get a comprehensive analysis plan with code examples
+        This tool is designed to guide you through the process of statistical analysis,
+        from data preparation to interpretation. It provides:
+        
+        - Interactive data exploration
+        - Automated statistical test selection
+        - Comprehensive analysis planning
+        - Clear visualization options
         """)
     
-    # Session Management
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Start New Analysis"):
-            st.session_state.clear()
-            st.session_state['current_step'] = 'data_upload'
-            st.experimental_rerun()
-    
-    with col2:
-        if st.button("Load Previous Session"):
-            # TODO: Implement session loading
-            st.info("Session loading coming soon!")
-    
+    # Quick Start Guide
+    with st.expander("Quick Start Guide"):
+        st.markdown("""
+        1. **Data Input**: Upload your data or use example datasets
+        2. **Data Understanding**: Explore your data structure and characteristics
+        3. **Distributional Analysis**: Examine data distributions and normality
+        4. **Test Selection**: Choose appropriate statistical tests
+        5. **Analysis Plan**: Generate a comprehensive analysis plan
+        """)
+
+def initialize_session():
+    """Initialize session state variables if they don't exist."""
+    if 'current_step' not in st.session_state:
+        st.session_state['current_step'] = 'welcome'
+    if 'data' not in st.session_state:
+        st.session_state['data'] = None
+    if 'analysis_type' not in st.session_state:
+        st.session_state['analysis_type'] = None
+
     # Statistical Glossary
     with st.sidebar:
         st.header("Statistical Glossary")
@@ -51,13 +70,4 @@ def show_welcome_screen():
                 with st.expander(term):
                     st.markdown(definition)
         else:
-            st.info("Glossary will be available soon!")
-
-def initialize_session():
-    """Initialize session state variables."""
-    if 'current_step' not in st.session_state:
-        st.session_state['current_step'] = 'welcome'
-    if 'data' not in st.session_state:
-        st.session_state['data'] = None
-    if 'analysis_plan' not in st.session_state:
-        st.session_state['analysis_plan'] = {} 
+            st.info("Glossary will be available soon!") 

@@ -1,0 +1,97 @@
+{
+    "repeated_measures": {
+        "description": "Data for repeated measures analysis",
+        "required_columns": [
+            {
+                "name": "subject_id",
+                "type": "categorical",
+                "description": "Unique identifier for each subject"
+            },
+            {
+                "name": "time_point",
+                "type": "categorical",
+                "description": "Measurement time point (e.g., 'baseline', 'week1')"
+            },
+            {
+                "name": "measurement",
+                "type": "numeric",
+                "description": "The actual measurement value"
+            }
+        ],
+        "validation_rules": [
+            "Each subject must have measurements at all time points",
+            "Time points should be consistent across subjects",
+            "Measurements should be numeric"
+        ]
+    },
+    "independent_groups": {
+        "description": "Data for independent groups analysis",
+        "required_columns": [
+            {
+                "name": "group",
+                "type": "categorical",
+                "description": "Group identifier (e.g., 'control', 'treatment')"
+            },
+            {
+                "name": "measurement",
+                "type": "numeric",
+                "description": "The actual measurement value"
+            }
+        ],
+        "validation_rules": [
+            "Group labels should be consistent",
+            "Measurements should be numeric",
+            "Groups should be balanced if possible"
+        ]
+    },
+    "hierarchical": {
+        "description": "Data for hierarchical analysis",
+        "required_columns": [
+            {
+                "name": "level1_id",
+                "type": "categorical",
+                "description": "Identifier for the highest level (e.g., 'school')"
+            },
+            {
+                "name": "level2_id",
+                "type": "categorical",
+                "description": "Identifier for the second level (e.g., 'class')"
+            },
+            {
+                "name": "subject_id",
+                "type": "categorical",
+                "description": "Identifier for the individual subject"
+            },
+            {
+                "name": "measurement",
+                "type": "numeric",
+                "description": "The actual measurement value"
+            }
+        ],
+        "validation_rules": [
+            "All hierarchical levels must be present for each measurement",
+            "Identifiers should be consistent within each level",
+            "Measurements should be numeric"
+        ]
+    },
+    "time_series": {
+        "description": "Data for time series analysis",
+        "required_columns": [
+            {
+                "name": "timestamp",
+                "type": "datetime",
+                "description": "Date/time of measurement"
+            },
+            {
+                "name": "measurement",
+                "type": "numeric",
+                "description": "The actual measurement value"
+            }
+        ],
+        "validation_rules": [
+            "Timestamps should be in chronological order",
+            "Time intervals should be consistent",
+            "Measurements should be numeric"
+        ]
+    }
+} 
