@@ -12,6 +12,62 @@ The Data Assessment Blueprint is designed to help researchers and data analysts 
 - Generating comprehensive analysis plans
 - Validating data formats and requirements
 
+## Framework Structure
+
+### 1. User Interface (UI) Layer
+- **Dashboard/Welcome Screen**
+  - App purpose explanation
+  - New analysis/load session options
+  - Statistical glossary and learning resources
+- **Data Upload/Input Module**
+  - Support for CSV, Excel, JSON formats
+  - Data preview and validation
+  - Basic data cleaning tools
+- **Interactive Q&A Module**
+  - LLM-driven question flow
+  - Multiple choice and open-ended inputs
+  - Dynamic visualizations
+- **Statistical Pathway Visualization**
+  - Progress tracking
+  - Decision tree visualization
+- **Results & Recommendations**
+  - Test recommendations with explanations
+  - Code snippets (Python/R)
+  - Interpretation guidance
+
+### 2. Core Logic & Statistical Engine
+- **Data Preprocessing & Validation**
+  - Quality checks
+  - Missing value handling
+  - Outlier detection
+- **Statistical Decision Engine**
+  - Pre-defined pathways
+  - LLM-driven branching
+  - Assumption checking
+- **Code Generation**
+  - Python/R implementation
+  - Documentation and examples
+
+### 3. LLM Integration
+- **Prompt Engineering**
+  - System and user prompts
+  - Context management
+  - Response parsing
+- **Error Handling**
+  - Fallback mechanisms
+  - Clarification requests
+  - Session management
+
+### 4. Knowledge Base
+- **Statistical Concepts**
+  - Term definitions
+  - Test assumptions
+  - Best practices
+- **Code Repository**
+  - Implementation examples
+  - Common pitfalls
+  - External resources
+
 ## Features
 
 ### Phase 3: Statistical Characterization
@@ -72,6 +128,26 @@ The application supports various data structures:
 ### Time Series
 - Required columns: `timestamp`, `measurement`
 - Data should be chronologically ordered
+
+## Planned Enhancements
+
+### UI Improvements
+- [ ] Interactive decision tree visualization
+- [ ] Session management and export
+- [ ] Enhanced data preview and cleaning tools
+- [ ] Statistical glossary integration
+
+### LLM Integration
+- [ ] Dynamic question generation
+- [ ] Context-aware recommendations
+- [ ] Code snippet generation
+- [ ] Error handling and fallbacks
+
+### Knowledge Base
+- [ ] Comprehensive statistical concepts database
+- [ ] Code repository expansion
+- [ ] External resource links
+- [ ] Best practices documentation
 
 ## Contributing
 
