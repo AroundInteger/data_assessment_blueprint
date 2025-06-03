@@ -181,6 +181,101 @@ st.markdown("""
         color: #E0E0E0;
         background-color: #424242;
     }
+    
+    /* Navigation styling */
+    .sidebar .sidebar-content {
+        background-color: #1E1E1E;
+    }
+    
+    /* Navigation header */
+    .sidebar .sidebar-content h2 {
+        color: #FFFFFF;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 3px solid #9C27B0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    /* Radio button container */
+    .sidebar .sidebar-content .stRadio > div {
+        background-color: #2D2D2D;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin: 1rem 0;
+        font-size: 1.3rem;
+        font-weight: 600;
+        border: 2px solid #424242;
+        transition: all 0.3s ease;
+    }
+    
+    /* Radio button hover effect */
+    .sidebar .sidebar-content .stRadio > div:hover {
+        background-color: #3D3D3D;
+        transform: translateX(8px);
+        border-color: #9C27B0;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Radio button selected state */
+    .sidebar .sidebar-content .stRadio > div[data-baseweb="radio"] {
+        color: #FFFFFF;
+    }
+    
+    /* Radio button label */
+    .sidebar .sidebar-content .stRadio > div label {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #FFFFFF;
+        padding: 0.5rem 0;
+    }
+    
+    /* Radio button circle */
+    .sidebar .sidebar-content .stRadio > div div[role="radiogroup"] {
+        margin-top: 0.8rem;
+    }
+    
+    /* Radio button circle size */
+    .sidebar .sidebar-content .stRadio > div div[role="radiogroup"] div {
+        width: 24px;
+        height: 24px;
+    }
+    
+    /* Radio button circle border */
+    .sidebar .sidebar-content .stRadio > div div[role="radiogroup"] div div {
+        border: 2px solid #9C27B0;
+    }
+    
+    /* Radio button selected circle */
+    .sidebar .sidebar-content .stRadio > div div[role="radiogroup"] div[aria-checked="true"] div {
+        background-color: #9C27B0;
+    }
+    
+    /* Glossary styling */
+    .sidebar .sidebar-content .streamlit-expanderHeader {
+        background-color: #2D2D2D;
+        color: #B0B0B0;
+        border-radius: 4px;
+        margin: 2rem 0 0.5rem 0;
+        font-size: 0.9rem;
+    }
+    
+    .sidebar .sidebar-content .streamlit-expanderHeader:hover {
+        background-color: #3D3D3D;
+    }
+    
+    /* Glossary content */
+    .sidebar .sidebar-content .streamlit-expanderContent {
+        font-size: 0.85rem;
+        color: #B0B0B0;
+    }
+    
+    .sidebar .sidebar-content .streamlit-expanderContent strong {
+        color: #E0E0E0;
+        font-size: 0.9rem;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -1139,15 +1234,17 @@ def main():
         show_welcome_screen()
         return
     
-    # Main content
-    st.title("Phase 3: Statistical Characterization")
+    # Sidebar layout
+    with st.sidebar:
+        # Navigation section
+        st.markdown("## 📊 Navigation")
+        current_step = st.radio(
+            "Select Step",
+            ["Data Input", "Data Understanding", "Distributional Analysis", "Statistical Test Selection", "Analysis Plan"]
+        )
     
-    # Navigation
-    st.sidebar.title("Navigation")
-    current_step = st.sidebar.radio(
-        "Select Step",
-        ["Data Input", "Data Understanding", "Distributional Analysis", "Statistical Test Selection", "Analysis Plan"]
-    )
+    # Main content - Dynamic title based on current step
+    st.title(f"Phase 3: {current_step}")
     
     if current_step == "Data Input":
         show_data_input()
@@ -1582,16 +1679,91 @@ def main():
         
         # Code Template
         with st.expander("Implementation Code"):
-            st.code(plan["code_template"], language="python")
+            # Create a code template that uses a function-based approach
+            code_template = """
+import numpy as np
+import pandas as pd
+from scipy import stats
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+def run_analysis(data, measurement_col):
+    # Primary test
+    if len(data['group'].unique()) == 2:
+        # Mann-Whitney U test for 2 groups
+        statistic, p_value = stats.mannwhitneyu(
+            data[data['group'] == 'group1'][measurement_col],
+            data[data['group'] == 'group2'][measurement_col]
+        )
+        # Calculate effect size
+        n1 = len(data[data['group'] == 'group1'])
+        n2 = len(data[data['group'] == 'group2'])
+        z = stats.norm.ppf(1 - p_value/2)
+        r = z / np.sqrt(n1 + n2)
+        effect_size = r
+    else:
+        # Kruskal-Wallis test for 3+ groups
+        statistic, p_value = stats.kruskal(
+            *[group[measurement_col] for name, group in data.groupby('group')]
+        )
+        # Calculate effect size
+        n = len(data)
+        k = len(data['group'].unique())
+        eta_squared = (statistic - k + 1) / (n - k)
+        effect_size = eta_squared
+
+    # Create visualization
+    plt.figure(figsize=(10, 6))
+    sns.boxplot(data=data, x='group', y=measurement_col)
+    sns.stripplot(data=data, x='group', y=measurement_col, color='black', alpha=0.5)
+    plt.title('Measurement by Group')
+    
+    # Save plot to a temporary file
+    plt.savefig('analysis_plot.png')
+    plt.close()
+
+    return {
+        'statistic': statistic,
+        'p_value': p_value,
+        'effect_size': effect_size
+    }
+
+# Example usage:
+# results = run_analysis(df, 'measurement_column')
+# print(f"Test statistic: {results['statistic']:.3f}")
+# print(f"p-value: {results['p_value']:.3f}")
+# print(f"Effect size: {results['effect_size']:.3f}")
+"""
+            st.code(code_template, language="python")
             
             # Add interactive code execution
             st.markdown("### Interactive Code Execution")
             if st.button("Run Analysis Code"):
                 try:
+                    # Get the data from session state
+                    data = st.session_state['data']
+                    if data is None:
+                        st.error("Please upload or load data first!")
+                        return
+                        
+                    # Get numeric columns for selection
+                    numeric_cols = data.select_dtypes(include=[np.number]).columns
+                    if len(numeric_cols) == 0:
+                        st.error("No numeric columns found in the data!")
+                        return
+                        
+                    # Let user select the measurement column
+                    measurement_col = st.selectbox("Select column to analyze", numeric_cols)
+                    
                     # Create a temporary file for the code
                     with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
-                        f.write(plan["code_template"])
+                        f.write(code_template)
                         temp_file = f.name
+                    
+                    # Create a temporary file for the data
+                    data_file = tempfile.NamedTemporaryFile(suffix='.csv', delete=False)
+                    data.to_csv(data_file.name, index=False)
+                    data_file.close()
                     
                     # Execute the code and capture output
                     result = subprocess.run(['python', temp_file], 
@@ -1607,8 +1779,9 @@ def main():
                         st.error("Error in code execution:")
                         st.code(result.stderr)
                     
-                    # Clean up temporary file
+                    # Clean up temporary files
                     os.unlink(temp_file)
+                    os.unlink(data_file.name)
                     
                 except Exception as e:
                     st.error(f"Error executing code: {str(e)}")

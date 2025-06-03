@@ -2,14 +2,6 @@ import streamlit as st
 import json
 from pathlib import Path
 
-def load_glossary():
-    """Load statistical glossary from JSON file."""
-    glossary_path = Path(__file__).parent.parent / "data" / "glossary.json"
-    if glossary_path.exists():
-        with open(glossary_path, 'r') as f:
-            return json.load(f)
-    return {}
-
 def show_welcome_screen():
     """Display the welcome screen with project overview and navigation options."""
     st.markdown('<h1 class="main-header">Data Assessment Blueprint</h1>', unsafe_allow_html=True)
@@ -59,15 +51,4 @@ def initialize_session():
     if 'data' not in st.session_state:
         st.session_state['data'] = None
     if 'analysis_type' not in st.session_state:
-        st.session_state['analysis_type'] = None
-
-    # Statistical Glossary
-    with st.sidebar:
-        st.header("Statistical Glossary")
-        glossary = load_glossary()
-        if glossary:
-            for term, definition in glossary.items():
-                with st.expander(term):
-                    st.markdown(definition)
-        else:
-            st.info("Glossary will be available soon!") 
+        st.session_state['analysis_type'] = None 
