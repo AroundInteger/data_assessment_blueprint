@@ -4,6 +4,9 @@ from datetime import datetime, timedelta
 
 def get_data_examples():
     """Generate example datasets for different data structures and distributions."""
+    # Set random seed for reproducibility
+    np.random.seed(42)
+    
     examples = {
         "Repeated Measures": {
             "description": "Athlete performance data across training sessions",
@@ -12,7 +15,7 @@ def get_data_examples():
                     "data": pd.DataFrame({
                         'athlete_id': np.repeat(range(1, 11), 5),
                         'session': np.tile(range(1, 6), 10),
-                        'performance': np.random.normal(100, 10, 50)
+                        'performance': np.random.normal(100, 5, 50)  # Reduced standard deviation for more normal distribution
                     })
                 },
                 "skewed": {
@@ -30,7 +33,7 @@ def get_data_examples():
                 "normal": {
                     "data": pd.DataFrame({
                         'treatment': np.repeat(['A', 'B', 'C'], 10),
-                        'growth': np.random.normal(50, 5, 30)
+                        'growth': np.random.normal(50, 3, 30)  # Reduced standard deviation
                     })
                 },
                 "skewed": {
@@ -48,7 +51,7 @@ def get_data_examples():
                     "data": pd.DataFrame({
                         'school': np.repeat(['School A', 'School B'], 15),
                         'class': np.repeat(['Class 1', 'Class 2', 'Class 3'], 10),
-                        'score': np.random.normal(75, 8, 30)
+                        'score': np.random.normal(75, 4, 30)  # Reduced standard deviation
                     })
                 },
                 "skewed": {
@@ -66,7 +69,7 @@ def get_data_examples():
                 "normal": {
                     "data": pd.DataFrame({
                         'date': pd.date_range(start='2024-01-01', periods=30),
-                        'temperature': np.random.normal(20, 5, 30)
+                        'temperature': np.random.normal(20, 2, 30)  # Reduced standard deviation
                     })
                 },
                 "skewed": {
