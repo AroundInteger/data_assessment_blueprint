@@ -1293,10 +1293,11 @@ def main():
         
         data = st.session_state['data']
         
-        # Select column for analysis
-        numeric_cols = data.select_dtypes(include=[np.number]).columns
-        if len(numeric_cols) > 0:
-            selected_col = st.selectbox("Select column for distribution analysis", numeric_cols)
+        # Get the measurement column from the example data
+        if 'data_structure' in st.session_state:
+            examples = get_data_examples()
+            data_structure = st.session_state['data_structure']
+            measurement_col = examples[data_structure]["examples"]["normal"]["measurement_col"]
             
             # Create three columns for layout
             col1, col2, col3 = st.columns([1, 1, 1])
@@ -1304,14 +1305,14 @@ def main():
             with col1:
                 # Distribution Plot
                 st.markdown("### Distribution Plot")
-                fig = px.histogram(data, x=selected_col, marginal="box", width=400, height=400)
+                fig = px.histogram(data, x=measurement_col, marginal="box", width=400, height=400)
                 st.plotly_chart(fig, use_container_width=False)
             
             with col2:
                 # Q-Q Plot
                 st.markdown("### Q-Q Plot")
-                qq_fig = px.scatter(x=stats.probplot(data[selected_col], dist="norm")[0][0],
-                                  y=stats.probplot(data[selected_col], dist="norm")[0][1],
+                qq_fig = px.scatter(x=stats.probplot(data[measurement_col], dist="norm")[0][0],
+                                  y=stats.probplot(data[measurement_col], dist="norm")[0][1],
                                   width=400, height=400)
                 qq_fig.add_scatter(x=[-3, 3], y=[-3, 3], mode='lines', name='Normal')
                 st.plotly_chart(qq_fig, use_container_width=False)
@@ -1321,14 +1322,14 @@ def main():
                 st.markdown("### Normality Assessment")
                 
                 # Calculate skewness and kurtosis
-                skewness = stats.skew(data[selected_col])
-                kurtosis = stats.kurtosis(data[selected_col])
+                skewness = stats.skew(data[measurement_col])
+                kurtosis = stats.kurtosis(data[measurement_col])
                 
                 # Shapiro-Wilk Test
-                shapiro_stat, shapiro_p = stats.shapiro(data[selected_col])
+                shapiro_stat, shapiro_p = stats.shapiro(data[measurement_col])
                 
                 # Anderson-Darling Test
-                anderson = stats.anderson(data[selected_col])
+                anderson = stats.anderson(data[measurement_col])
                 
                 # Store distribution analysis results
                 st.session_state['distribution_analysis'] = {
@@ -1413,8 +1414,37 @@ def main():
                         - The deviations from normality are minor and unlikely to affect results
                         - No transformation is necessary
                         """)
+                        # Set analysis decisions for approximately normal data
+                        st.session_state['analysis_decisions']['use_nonparametric'] = False
+                        st.session_state['analysis_decisions']['reasoning'] = (
+                            f"Data is approximately normal (skewness: {skewness:.3f}, kurtosis: {kurtosis:.3f}). "
+                            f"Minor deviations from normality (Shapiro-Wilk p={shapiro_p:.4f}, Anderson-Darling={anderson.statistic:.4f}) "
+                            "are unlikely to affect parametric test results."
+                        )
                     else:
                         st.warning("### Non-normality detected:")
+                        # Build detailed reasoning for non-normal data
+                        reasoning_parts = []
+                        if abs(skewness) > 1:
+                            reasoning_parts.append(f"Strong {'positive' if skewness > 0 else 'negative'} skewness ({skewness:.3f})")
+                        elif abs(skewness) > 0.5:
+                            reasoning_parts.append(f"Moderate {'positive' if skewness > 0 else 'negative'} skewness ({skewness:.3f})")
+                        
+                        if abs(kurtosis) > 2:
+                            reasoning_parts.append(f"Heavy tails (kurtosis: {kurtosis:.3f})")
+                        elif abs(kurtosis) > 1:
+                            reasoning_parts.append(f"Moderate deviation from normal kurtosis ({kurtosis:.3f})")
+                        
+                        if shapiro_p < 0.05:
+                            reasoning_parts.append(f"Shapiro-Wilk test indicates non-normality (p={shapiro_p:.4f})")
+                        
+                        if anderson.statistic > anderson.critical_values[2]:
+                            reasoning_parts.append(f"Anderson-Darling test indicates non-normality (statistic={anderson.statistic:.4f})")
+                        
+                        # Set analysis decisions for non-normal data
+                        st.session_state['analysis_decisions']['use_nonparametric'] = True
+                        st.session_state['analysis_decisions']['reasoning'] = "Non-normality detected: " + "; ".join(reasoning_parts)
+                        
                         for assessment, explanation in zip(normality_assessment, normality_explanation):
                             with st.expander(assessment):
                                 st.markdown(explanation)
@@ -1460,82 +1490,21 @@ def main():
                     - No transformation needed
                     - Standard statistical methods can be used
                     """)
-                    
-                    # Analysis Decision
-                    st.markdown("### Analysis Decision")
-                    analysis_choice = st.radio(
-                        "Choose your analysis approach:",
-                        ["Transform the data", "Use non-parametric methods"]
+                    # Set analysis decisions for normal data
+                    st.session_state['analysis_decisions']['use_nonparametric'] = False
+                    st.session_state['analysis_decisions']['reasoning'] = (
+                        f"Data appears normally distributed (skewness: {skewness:.3f}, kurtosis: {kurtosis:.3f}). "
+                        f"Both Shapiro-Wilk (p={shapiro_p:.4f}) and Anderson-Darling (statistic={anderson.statistic:.4f}) "
+                        "tests confirm normality."
                     )
                     
-                    if analysis_choice == "Transform the data":
-                        st.session_state['analysis_decisions']['use_nonparametric'] = False
-                        st.session_state['analysis_decisions']['reasoning'] = "Data transformation chosen to achieve normality"
-                        
-                        # Transformation options
-                        st.markdown("#### Data Transformation Options:")
-                        if skewness > 0:
-                            st.markdown("""
-                            - Log transformation: `np.log1p(data)`
-                            - Square root transformation: `np.sqrt(data)`
-                            - Box-Cox transformation: `stats.boxcox(data)`
-                            """)
-                        elif skewness < 0:
-                            st.markdown("""
-                            - Square transformation: `data ** 2`
-                            - Cube transformation: `data ** 3`
-                            - Yeo-Johnson transformation: `stats.yeojohnson(data)`
-                            """)
-                        
-                        # Transformation Preview
-                        st.markdown("### Transformation Preview")
-                        transform_option = st.selectbox(
-                            "Select transformation to preview",
-                            ["Log", "Square Root", "Box-Cox", "Square", "Cube", "Yeo-Johnson"]
+                    # Analysis Decision - Only show if non-normality is detected
+                    if any("non-normality" in assessment for assessment in normality_assessment):
+                        st.markdown("### Analysis Decision")
+                        analysis_choice = st.radio(
+                            "Choose your analysis approach:",
+                            ["Use non-parametric methods"]
                         )
-                        
-                        if transform_option == "Log":
-                            transformed_data = np.log1p(data[selected_col])
-                            transform_name = "Log-transformed"
-                        elif transform_option == "Square Root":
-                            transformed_data = np.sqrt(data[selected_col])
-                            transform_name = "Square root-transformed"
-                        elif transform_option == "Box-Cox":
-                            transformed_data, _ = stats.boxcox(data[selected_col])
-                            transform_name = "Box-Cox-transformed"
-                        elif transform_option == "Square":
-                            transformed_data = data[selected_col] ** 2
-                            transform_name = "Square-transformed"
-                        elif transform_option == "Cube":
-                            transformed_data = data[selected_col] ** 3
-                            transform_name = "Cube-transformed"
-                        else:  # Yeo-Johnson
-                            transformed_data, _ = stats.yeojohnson(data[selected_col])
-                            transform_name = "Yeo-Johnson-transformed"
-                        
-                        # Plot transformed data
-                        fig = px.histogram(x=transformed_data, marginal="box",
-                                         title=f"{transform_name} Distribution",
-                                         width=400, height=400)
-                        st.plotly_chart(fig, use_container_width=False)
-                        
-                        # Show normality metrics for transformed data
-                        st.markdown(f"#### {transform_name} Data Normality Metrics")
-                        st.metric("Skewness", f"{stats.skew(transformed_data):.3f}")
-                        st.metric("Kurtosis", f"{stats.kurtosis(transformed_data):.3f}")
-                        sw_stat, sw_p = stats.shapiro(transformed_data)
-                        st.metric("Shapiro-Wilk p-value", f"{sw_p:.4f}")
-                        ad_stat = stats.anderson(transformed_data).statistic
-                        st.metric("Anderson-Darling Statistic", f"{ad_stat:.4f}")
-                        
-                        # Store transformation decision
-                        st.session_state['analysis_decisions']['transformation_applied'] = True
-                        st.session_state['analysis_decisions']['transformation_type'] = transform_option
-                        
-                    else:  # Use non-parametric methods
-                        st.session_state['analysis_decisions']['use_nonparametric'] = True
-                        st.session_state['analysis_decisions']['transformation_applied'] = False
-                        st.session_state['analysis_decisions']['reasoning'] = "Non-parametric methods chosen due to non-normality"
                         
                         # Non-parametric alternatives
                         st.markdown("#### Recommended Non-parametric Tests:")
@@ -1547,6 +1516,9 @@ def main():
                         """)
                         
                         # Store test preferences
+                        st.session_state['analysis_decisions']['use_nonparametric'] = True
+                        st.session_state['analysis_decisions']['transformation_applied'] = False
+                        st.session_state['analysis_decisions']['reasoning'] = "Non-parametric methods chosen due to non-normality"
                         st.session_state['analysis_decisions']['preferred_tests'] = {
                             'two_groups': 'Mann-Whitney U test',
                             'multiple_groups': 'Kruskal-Wallis test',
@@ -1676,6 +1648,70 @@ def main():
             st.markdown("#### Robust Alternatives")
             for test in plan["alternative_tests"]:
                 st.markdown(f"- {test}")
+            
+            # Add transformation options if non-normality was detected
+            if st.session_state['analysis_decisions']['use_nonparametric']:
+                st.markdown("#### Data Transformation Options")
+                st.markdown("""
+                If you prefer to use parametric tests, you can try transforming the data to achieve normality:
+                
+                **For positive skewness:**
+                - Log transformation: `np.log1p(data)`
+                - Square root transformation: `np.sqrt(data)`
+                - Box-Cox transformation: `stats.boxcox(data)`
+                
+                **For negative skewness:**
+                - Square transformation: `data ** 2`
+                - Cube transformation: `data ** 3`
+                - Yeo-Johnson transformation: `stats.yeojohnson(data)`
+                """)
+                
+                # Get data and measurement column from session state
+                data = st.session_state['data']
+                examples = get_data_examples()
+                data_structure = st.session_state['data_structure']
+                measurement_col = examples[data_structure]["examples"]["normal"]["measurement_col"]
+                
+                # Transformation Preview
+                st.markdown("### Transformation Preview")
+                transform_option = st.selectbox(
+                    "Select transformation to preview",
+                    ["Log", "Square Root", "Box-Cox", "Square", "Cube", "Yeo-Johnson"]
+                )
+                
+                if transform_option == "Log":
+                    transformed_data = np.log1p(data[measurement_col])
+                    transform_name = "Log-transformed"
+                elif transform_option == "Square Root":
+                    transformed_data = np.sqrt(data[measurement_col])
+                    transform_name = "Square root-transformed"
+                elif transform_option == "Box-Cox":
+                    transformed_data, _ = stats.boxcox(data[measurement_col])
+                    transform_name = "Box-Cox-transformed"
+                elif transform_option == "Square":
+                    transformed_data = data[measurement_col] ** 2
+                    transform_name = "Square-transformed"
+                elif transform_option == "Cube":
+                    transformed_data = data[measurement_col] ** 3
+                    transform_name = "Cube-transformed"
+                else:  # Yeo-Johnson
+                    transformed_data, _ = stats.yeojohnson(data[measurement_col])
+                    transform_name = "Yeo-Johnson-transformed"
+                
+                # Plot transformed data
+                fig = px.histogram(x=transformed_data, marginal="box",
+                                 title=f"{transform_name} Distribution",
+                                 width=400, height=400)
+                st.plotly_chart(fig, use_container_width=False)
+                
+                # Show normality metrics for transformed data
+                st.markdown(f"#### {transform_name} Data Normality Metrics")
+                st.metric("Skewness", f"{stats.skew(transformed_data):.3f}")
+                st.metric("Kurtosis", f"{stats.kurtosis(transformed_data):.3f}")
+                sw_stat, sw_p = stats.shapiro(transformed_data)
+                st.metric("Shapiro-Wilk p-value", f"{sw_p:.4f}")
+                ad_stat = stats.anderson(transformed_data).statistic
+                st.metric("Anderson-Darling Statistic", f"{ad_stat:.4f}")
         
         # Code Template
         with st.expander("Implementation Code"):
